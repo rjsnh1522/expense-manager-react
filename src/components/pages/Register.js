@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import AlertContainer from 'react-alert';
+import Validator from 'validator';
+
+import PropTypes from 'prop-types';
+
+import InLineError from '../shared/InLineError';
+
 
 const url = "http://localhost:4000";
 
@@ -12,9 +18,13 @@ class Register  extends Component {
 
     super(props);
     this.state = {
-      full_name:"",
-      email: "",
-      password: ""
+      data:{
+        full_name:"",
+        email:'',
+        password:''
+      },
+      loading:false,
+      errors:{}
     }
 
     this.inputVaue = this.inputVaue.bind(this);
@@ -40,29 +50,37 @@ class Register  extends Component {
 
 
   inputVaue(e){
-    this.setState({[e.target.name]: e.target.value});
+    this.setState({
+      data: {...this.state.data,[e.target.name]: e.target.value}
+    });
   }
 
   submitForm = (e) => {
     e.preventDefault();
-    console.log(this.state);
+    const errors = this.validate(this.state.data);
+    this.setState({ errors });
 
-  var isValid =  this.checkValidation();
-  var errorBox = document.getElementById("errorMessage");
-  // console.log(errorBox.innerHtml = "tess")
-  errorBox.innerHtml = "";
-      if(isValid){
-        errorBox.innerHtml = "";
-        axios.post(url+'/users',{user: this.state})
-              .then(function (response) {
-                console.log(response);
-              })
-              .catch(function (error) {
-                // console.log(error);
-              });
+  let msg = "";
+
+      if(Object.keys(errors).length === 0){
+        this.props.submitRegister(this.state.data)
+        // axios.post(url+'/users',{user: this.state})
+        //       .then(function (response) {
+        //         console.log("then")
+        //         console.log(response.data);
+        //         msg = response.data.msg
+        //         console.log(msg)
+        //           this.showAlert(msg);
+        //           console.log(this.showAlert());
+        //       })
+        //       .catch(function (error) {
+        //           // console.log("catch");
+        //           // msg = "Something went wrong please try again later";
+        //           // this.showAlert(msg);
+        //       });
       }
       else{
-        let msg = "Error in the form please fill the form correctly"
+        msg = "Error in the form please fill the form correctly"
         this.showAlert(msg);
 
       }
@@ -71,25 +89,21 @@ class Register  extends Component {
 
   }
 
-  checkValidation = () => {
 
-    var fname = this.state.full_name.length;
-    var email = this.state.email.length;
-    var password = this.state.password.length;
+validate = (data) => {
+  const errors = {};
 
-      if (fname > 0 && email > 0 && password >= 6){
-        return true;
-      }
-      return false;
+  if(!Validator.isEmail(data.email)) errors.email = "Not a valid email";
+  if(!data.full_name) errors.full_name = "Name cant be blank";
+  if(!data.password) errors.password = "Password cant be blank and should be greater then 6 chars";
 
-
-
-
-  }
+  return errors;
+}
 
 
   render (){
 
+    const { data, errors } = this.state;
     return (
       <div id="sectionB" className="tab-pane fade">
         <AlertContainer ref={a => this.msg = a} {...this.alertOptions} />
@@ -98,22 +112,24 @@ class Register  extends Component {
                                 <label>Name</label>
                                 <input type="text"
                                   name="full_name"
-                                  value={this.state.full_name}
+                                  value={data.full_name}
                                   onChange={this.inputVaue}
                                 />
+                                { errors.full_name && <InLineError text={errors.full_name}/>}
                                 <label>Email Address</label>
                                 <input type="text"
                                   name="email"
-                                  value={this.state.email}
+                                  value={data.email}
                                   onChange={this.inputVaue}
                                 />
+                                { errors.email && <InLineError text={errors.email}/>}
                                 <label>Password</label>
                                 <input type="password"
                                   name="password"
-                                  value={this.state.password}
+                                  value={data.password}
                                   onChange={this.inputVaue}
                                 />
-                                <p id="errorMessage"> </p>
+                                { errors.password && <InLineError text={errors.password}/>}
                                 <button type="submit">Join now</button>
                           </form>
                   </div>
@@ -130,5 +146,9 @@ class Register  extends Component {
   }
 }
 
+
+Register.PropTypes = {
+  submitRegister: PropTypes.func.isRequired
+}
 
 export default Register ;

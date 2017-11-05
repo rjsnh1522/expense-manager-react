@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route,  NavLink } from 'react-router-dom'
-import Login from '../pages/Login';
+import LogRegForms from '../pages/LogRegForms';
 import Home from '../pages/Home';
 
 class Header extends Component {
@@ -35,7 +35,7 @@ class Header extends Component {
           </nav>
       </div>
       <div>
-        <Route exact path="/" component={Login}/>
+        <Route exact path="/" component={LogRegForms}/>
         <Route  path="/home" component={Home}/>
       </div>
     </div>
